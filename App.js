@@ -4,11 +4,14 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'rea
 
 export default function App() {
   const [loading, setloading] = useState(true); 
-  const BUSSTOP_URL = "https://arrivelah2.busrouter.sg/?id=83139";
+  const [arrival, setArrival] = useState("");
+  const BUSSTOP_URL = "https://arrivelah2.busrouter.sg/?id=83139";                   
 
 function loadBusStopData() {
+  setloading(true)
 fetch(BUSSTOP_URL)
 .then((Response) => {
+  
   return Response.json();
 })
 .then((ResponseData) => {
@@ -17,21 +20,22 @@ fetch(BUSSTOP_URL)
   const myBus = ResponseData.services.filter(
     (item) => item.no === "155"
   )[0];
-  console.log("My bus");
-  console.log(myBus);
-
+  setArrival(myBus.next.time)
+  setloading(false)
+  
 });
 
 }
 useEffect(() => {
-  loadBusStopData();
+  const interval = setInterval(loadBusStopData,5000);
+  return () => clearInterval(interval)
 }, []);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bus arrival time</Text>
       <Text style={styles.arrivalTime}>
-      {loading ? <ActivityIndicator size="large" /> : "Loaded"}
+      {loading ? <ActivityIndicator size="large" /> : arrival}
       </Text>
       <TouchableOpacity style={styles.button}>
 <Text style={styles.buttonText}>Refresh!</Text>
@@ -51,7 +55,6 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: 'green',
-
     padding: 20,
     borderRadius: 10,
     marginTop: 20,
